@@ -1,75 +1,64 @@
-import h5py
 import numpy as np
-import os
 import cv2
 
 
 def read_images(path_img, path_mask):
     img = cv2.imread(path_img, cv2.IMREAD_GRAYSCALE)
     img = np.array(img, dtype='uint8')
-    (h1, h2, w1, w2) = crop(img)
 
     mask = cv2.imread(path_mask, cv2.IMREAD_GRAYSCALE)
-    mask = mask*255.0
+    mask = mask * 255
+    mask = np.array(mask, dtype='uint8')
 
-    cropped_mask = mask[h1:h2, w1:w2]
-    cropped_img = img[h1:h2, w1:w2]
-    return cropped_img, cropped_mask
+    return img, mask
 
 
-def crop(image):
-    # function finds ROI by summing pixel rows and columns
-    image_img = image
-    treshold = 100
-    stride = 20
+def crop_images(image, mask):
+    """
+    Function finds upper and lower bounds of plank mask
+    and crops an image so that plank and background areas
+    are approximately equal. This is done due to dataset 
+    balancing purposes.
+    """
     offset_per = 0.05
-    # along x axis
-    x_start = int(image.shape[1]*offset_per)
-    x_end = int(image.shape[1]-x_start)
-    x_stride = (x_end-x_start)//stride
+    stride = int(mask.shape[0] * 0.03)
+    y_start = int(mask.shape[0] * offset_per)
+    y_end = int(mask.shape[0] - y_start)
+    n = (y_end-y_start) // stride
+    lower_bound_flag = False
+    upper_bound_flag = False
 
-    for i in range(x_stride):
-        max_pix = np.max(image_img[:, x_start])
-        x_start += stride
-        if max_pix > treshold:
-            x_l = i
-            break
-    for i in range(x_stride):
-        max_pix = np.max(image_img[:, x_end])
-        x_end -= stride
-        if max_pix > treshold:
-            x_r = i
-            break
+    for i in range(int(n)):
+        if not lower_bound_flag:
+            if np.max(mask[y_start, :]) == 1:
+                lower_bound_flag = True
+                lower_bound = y_start - stride
+            else:
+                y_start += stride
 
-    # along y axis
-    y_start = int(image.shape[0]*offset_per)
-    y_end = int(image.shape[0]-y_start)
-    y_stride = (y_end-y_start)//stride
+        if not upper_bound_flag:
+            if np.max(mask[y_end, :]) == 1:
+                upper_bound_flag = True
+                upper_bound = y_end + stride
+            else:
+                y_end -= stride
 
-    for i in range(y_stride):
-        max_pix = np.max(image_img[y_start, :])
-        y_start += stride
-        if max_pix > treshold:
-            y_u = i
-            break
-    for i in range(y_stride):
-        max_pix = np.max(image_img[y_end, :])
-        y_end -= stride
-        if max_pix > treshold:
-            y_l = i
-            break
+    # Estimate height of plank area and offset based on that
+    height = upper_bound - lower_bound
+    off = height // 2
+    y_l = lower_bound-off
+    y_u = upper_bound+off
+    # Check if new bounds don't extend over image boundaries
+    if y_l < 0:
+        y_l = 0
+    if y_u > image.shape[0]:
+        y_u = image.shape[0]
 
-    x_start = int(image.shape[1]*offset_per)
-    x_end = int(image.shape[1]-x_start)
-    y_start = int(image.shape[0]*offset_per)
-    y_end = int(image.shape[0]-y_start)
+    # Crop image and mask according to determined bounds
+    image_cropped = image[y_l:y_u, :]
+    mask_cropped = mask[y_l:y_u, :]
 
-    bounds = (y_start+stride*(y_u-10), y_end-stride*(y_l-10),
-              x_start+stride*(x_l-10), x_end-stride*(x_r-10))
-    #cropped_img = image_img[(y_start+stride*(y_u-10)):(y_end-stride*(y_l-10)),(x_start+stride*(x_l-10)):(x_end-stride*(x_r-10))]
-    # print(cropped_img.shape)
-    # cv2.imwrite('cropped.bmp',cropped_img)
-    return bounds
+    return image_cropped, mask_cropped
 
 
 def extract_patches(img, groundTruth, patch_h, patch_w):

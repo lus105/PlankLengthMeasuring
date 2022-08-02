@@ -1,7 +1,7 @@
 import os
 import numpy as np
-from utilities import read_images, extract_patches
 from options import Options
+from utilities import read_images, crop_images
 
 
 def main():
@@ -12,10 +12,13 @@ def main():
         for i in range(len(file)):
             print(cfg.imgs_train_path+file[i])
             print(cfg.masks_train_path+file[i])
-            # Check if image has corresponding mask (file names must be the same)
+            # Check if image has corresponding mask
             if os.path.exists(cfg.masks_train_path+file[i]):
                 img_train, mask_train = read_images(
                     cfg.imgs_train_path+file[i], cfg.masks_train_path+file[i])
+                # Cropping images so that each of them contains
+                # aproximately equal areas of planks/background
+                img_train_c, mask_train_c = crop_images(img_train, mask_train)
             # # Patches of images and gtruths
             # patches_imgs_train, patches_gt_train = extract_patches(
             #     img_train, gt_train, cfg.patch_h, cfg.patch_w)

@@ -18,19 +18,19 @@ class Options():
 
         # PARAMS
         self.parser.add_argument(
-            '--patch_h', type=int, default=128)
-        self.parser.add_argument(
-            '--patch_w', type=int, default=128)
+            '--patch_size', type=int, default=128)
         self.parser.add_argument(
             '--num_channels', type=int, default=1)
 
     def parse(self):
         self.opt = self.parser.parse_args()
-
-        # Create directories for saving patches if they don't exist
-        if not os.path.exists(self.opt.patch_imgs_dataset_path):
-            os.makedirs(self.opt.patch_imgs_dataset_path)
-        if not os.path.exists(self.opt.patch_masks_dataset_path):
-            os.makedirs(self.opt.patch_masks_dataset_path)
+        self._create_directories()
 
         return self.opt
+
+    def _create_directories(self):
+        # Create directories for saving patches if they don't exist
+        if not os.path.exists(self.opt.patch_imgs_dataset_path+str(self.opt.patch_size)):
+            os.makedirs(self.opt.patch_imgs_dataset_path+str(self.opt.patch_size))
+        if not os.path.exists(self.opt.patch_masks_dataset_path+str(self.opt.patch_size)):
+            os.makedirs(self.opt.patch_masks_dataset_path+str(self.opt.patch_size))
