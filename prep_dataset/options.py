@@ -30,7 +30,11 @@ class Options():
 
     def _create_directories(self):
         # Create directories for saving patches if they don't exist
-        if not os.path.exists(self.opt.patch_imgs_dataset_path+str(self.opt.patch_size)):
-            os.makedirs(self.opt.patch_imgs_dataset_path+str(self.opt.patch_size))
-        if not os.path.exists(self.opt.patch_masks_dataset_path+str(self.opt.patch_size)):
-            os.makedirs(self.opt.patch_masks_dataset_path+str(self.opt.patch_size))
+        self.opt.patch_imgs_dataset_path = self.opt.patch_imgs_dataset_path + \
+            str(self.opt.patch_size)
+        self.opt.patch_masks_dataset_path = self.opt.patch_masks_dataset_path + \
+            str(self.opt.patch_size)
+        if not os.path.exists(self.opt.patch_imgs_dataset_path):
+            os.makedirs(self.opt.patch_imgs_dataset_path)
+        if not os.path.exists(self.opt.patch_masks_dataset_path):
+            os.makedirs(self.opt.patch_masks_dataset_path)

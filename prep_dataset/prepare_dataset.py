@@ -1,7 +1,8 @@
 import os
 import numpy as np
+import cv2
 from options import Options
-from utilities import read_images, crop_images
+from utilities import read_images, crop_images, extract_patches
 
 
 def main():
@@ -19,16 +20,16 @@ def main():
                 # Cropping images so that each of them contains
                 # aproximately equal areas of planks/background
                 img_train_c, mask_train_c = crop_images(img_train, mask_train)
-            # # Patches of images and gtruths
-            # patches_imgs_train, patches_gt_train = extract_patches(
-            #     img_train, gt_train, cfg.patch_h, cfg.patch_w)
-            # # Saving as numpy patches
-            # for patch_img, patch_gt in zip(patches_imgs_train, patches_gt_train):
-            #     np.save(os.path.join(cfg.patch_imgs_dataset_path,
-            #             'id-'+str(idx)), patch_img)
-            #     np.save(os.path.join(cfg.patch_masks_dataset_path,
-            #             'id-'+str(idx)), patch_gt)
-            #     idx += 1
+                # Ectracting patches
+                patches_imgs_train, patches_mask_train = extract_patches(
+                    img_train_c, mask_train_c, cfg.patch_size)
+                # Saving as numpy patches
+                for patch_img, patch_mask in zip(patches_imgs_train, patches_mask_train):
+                    cv2.imwrite(os.path.join(cfg.patch_imgs_dataset_path,
+                                             'id-'+str(idx))+'.png', patch_img)
+                    cv2.imwrite(os.path.join(cfg.patch_masks_dataset_path,
+                                             'id-'+str(idx))+'.png', patch_mask)
+                    idx += 1
 
 
 if __name__ == '__main__':

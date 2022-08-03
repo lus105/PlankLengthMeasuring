@@ -3,12 +3,16 @@ import cv2
 
 
 def read_images(path_img, path_mask):
+    """
+    Function reads image and mask followed by
+    numpy array conversion
+    """
     img = cv2.imread(path_img, cv2.IMREAD_GRAYSCALE)
     img = np.array(img, dtype='uint8')
 
     mask = cv2.imread(path_mask, cv2.IMREAD_GRAYSCALE)
-    mask = mask * 255
     mask = np.array(mask, dtype='uint8')
+    #mask = mask * 255.
 
     return img, mask
 
@@ -17,7 +21,7 @@ def crop_images(image, mask):
     """
     Function finds upper and lower bounds of plank mask
     and crops an image so that plank and background areas
-    are approximately equal. This is done due to dataset 
+    are approximately equal. This is done due to dataset
     balancing purposes.
     """
     offset_per = 0.05
@@ -30,14 +34,14 @@ def crop_images(image, mask):
 
     for i in range(int(n)):
         if not lower_bound_flag:
-            if np.max(mask[y_start, :]) == 1:
+            if np.max(mask[y_start, :]) == 255:
                 lower_bound_flag = True
                 lower_bound = y_start - stride
             else:
                 y_start += stride
 
         if not upper_bound_flag:
-            if np.max(mask[y_end, :]) == 1:
+            if np.max(mask[y_end, :]) == 255:
                 upper_bound_flag = True
                 upper_bound = y_end + stride
             else:
@@ -61,41 +65,43 @@ def crop_images(image, mask):
     return image_cropped, mask_cropped
 
 
-def extract_patches(img, groundTruth, patch_h, patch_w):
-    # normalization 0-1
-    img = img/255.
-    groundTruth = groundTruth/255.
-    data_consistency_check(img, groundTruth)
+def extract_patches(img, mask, patch_size):
+    """
+    Function chops given images into array of patches.
+    """
+    # Normalization 0-1
+    #img = img / 255.
+    #mask = mask / 255.
+    data_consistency_check(img, mask)
+    # Image size
+    img_h, img_w = img.shape[:2]
+    # Overlap size in pixels
+    overlap = patch_size // 2
+    N_patches_h = (2 * img_h - overlap) // patch_size
+    N_patches_w = (2 * img_w - overlap) // patch_size
+    patches_imgs_train = []
+    patches_mask_train = []
 
-    img_h = img.shape[0]  # height of the full image
-    img_w = img.shape[1]  # width of the full image
-
-    N_patches = int((img_h/patch_h)*(img_w/patch_w))
-    N_patches_h = int(img_h/patch_h)
-    N_patches_w = int(img_w/patch_w)
-
-    patches_imgs_train = np.empty((N_patches, patch_h, patch_w))
-    patches_gt_train = np.empty((N_patches, patch_h, patch_w))
-
-    # iter over the total number of patches (N_patches)
-    iter_tot = 0
     for y in range(N_patches_h):
+        y_st = overlap * y
+        if (y_st + patch_size) > img_h:
+            y_st = y_st - patch_size
         for x in range(N_patches_w):
-            x_st = patch_w*(x)
-            y_st = patch_h*(y)
-            patch = img[y_st:y_st+int(patch_h), x_st:x_st+int(patch_w)]
-            patch_gt = groundTruth[y_st:y_st +
-                                   int(patch_h), x_st:x_st+int(patch_w)]
+            x_st = overlap * x
+            if (x_st + patch_size) > img_w:
+                x_st = x_st - patch_size
+            patch = img[y_st:y_st + patch_size, x_st:x_st + patch_size]
+            patch_msk = mask[y_st:y_st + patch_size, x_st:x_st + patch_size]
+            patches_imgs_train.append(patch)
+            patches_mask_train.append(patch_msk)
 
-            patches_imgs_train[iter_tot] = patch
-            patches_gt_train[iter_tot] = patch_gt
-            iter_tot += 1
-    data_consistency_check(img, groundTruth)
+    patches_imgs_train = np.array(patches_imgs_train)
+    patches_mask_train = np.array(patches_mask_train)
 
-    return patches_imgs_train, patches_gt_train
+    return patches_imgs_train, patches_mask_train
 
 
-def data_consistency_check(img, gtruth):
-    assert(len(img.shape) == len(gtruth.shape))
-    assert(img.shape[0] == gtruth.shape[0])
-    assert(img.shape[1] == gtruth.shape[1])
+def data_consistency_check(img, mask):
+    assert(len(img.shape) == len(mask.shape))
+    assert(img.shape[0] == mask.shape[0])
+    assert(img.shape[1] == mask.shape[1])
