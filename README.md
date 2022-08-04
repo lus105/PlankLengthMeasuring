@@ -6,3 +6,11 @@ Reference image:
 
 Corresponding mask:  
 <img src="https://github.com/lus105/PlankLengthMeasuring/blob/main/dataset_ref/masks/15.jpg" width="600"/>  
+
+
+Tasks:
+> Generator done
+> Models done
+> Import from parent
+> Train test validation splits done
+> Image processing, measuring

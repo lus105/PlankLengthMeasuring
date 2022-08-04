@@ -6,7 +6,7 @@ class Options():
     def __init__(self):
         self.parser = argparse.ArgumentParser()
 
-        # PATHS
+        # Paths
         self.parser.add_argument(
             '--imgs_train_path', type=str, default='dataset/images/')
         self.parser.add_argument(
@@ -15,12 +15,26 @@ class Options():
             '--patch_imgs_dataset_path', type=str, default='dataset/images_patch/')
         self.parser.add_argument(
             '--patch_masks_dataset_path', type=str, default='dataset/masks_patch/')
+        self.parser.add_argument(
+            '--weight_path', type=str, default='models/weights/')
 
-        # PARAMS
+        # Params
         self.parser.add_argument(
             '--patch_size', type=int, default=128)
         self.parser.add_argument(
             '--num_channels', type=int, default=1)
+
+        # Training
+        self.parser.add_argument(
+            '--batch_size', type=int, default=32)
+        self.parser.add_argument(
+            '--shuffle', action='store_true', default=True)
+        self.parser.add_argument(
+            '--nb_epochs', type=int, default=100)
+        self.parser.add_argument(
+            '--weight_name', type=str, default='weights_no1.hdf5')
+        self.parser.add_argument(
+            '--split_ratio', type=tuple, default=(0.7, 0.2, 0.1))
 
     def parse(self):
         self.opt = self.parser.parse_args()
