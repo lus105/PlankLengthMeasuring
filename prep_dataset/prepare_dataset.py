@@ -3,12 +3,12 @@ import numpy as np
 import cv2
 import sys
 sys.path.append('..')
-from PlankLengthMeasuring.options import Options
+from PlankLengthMeasuring.settings import options
 from utilities import read_images, crop_images, extract_patches
 
 
 def main():
-    cfg = Options().parse()
+    cfg = options.Options().parse()
     _, _, file_m = next(os.walk(cfg.masks_train_path))
     split_ratio = cfg.split_ratio
     num_file_m = len(file_m)
