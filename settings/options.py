@@ -16,7 +16,15 @@ class Options():
         self.parser.add_argument(
             '--patch_masks_dataset_path', type=str, default='dataset/masks_patch/')
         self.parser.add_argument(
+            '--train_split', type=str, default='train/')
+        self.parser.add_argument(
+            '--test_split', type=str, default='test/')
+        self.parser.add_argument(
+            '--val_split', type=str, default='val/')
+        self.parser.add_argument(
             '--weight_path', type=str, default='models/weights/')
+        self.parser.add_argument(
+            '--results', type=str, default='dataset/results/')
 
         # Params
         self.parser.add_argument(
@@ -45,9 +53,9 @@ class Options():
     def _create_directories(self):
         # Create directories for saving patches if they don't exist
         self.opt.patch_imgs_dataset_path = self.opt.patch_imgs_dataset_path + \
-            str(self.opt.patch_size)
+            str(self.opt.patch_size) + '/'
         self.opt.patch_masks_dataset_path = self.opt.patch_masks_dataset_path + \
-            str(self.opt.patch_size)
+            str(self.opt.patch_size) + '/'
         if not os.path.exists(self.opt.patch_imgs_dataset_path):
             os.makedirs(self.opt.patch_imgs_dataset_path)
         if not os.path.exists(self.opt.patch_masks_dataset_path):

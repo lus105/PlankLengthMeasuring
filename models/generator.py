@@ -45,8 +45,8 @@ class DataGenerator(keras.utils.all_utils.Sequence):
         # X : (n_samples, *dim, n_channels)
         'Generates data containing batch_size samples'
         # Initialization
-        X = np.empty((self.batch_size, self.n_channels, *self.dim))
-        y = np.empty((self.batch_size, self.n_channels, *self.dim))
+        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        y = np.empty((self.batch_size, *self.dim, self.n_channels))
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
@@ -56,9 +56,9 @@ class DataGenerator(keras.utils.all_utils.Sequence):
             else:
                 split = '/val/'
 
-            X[i, ] = cv2.imread(self.patch_imgs_dataset_path + split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
-            y[i, ] = cv2.imread(self.patch_masks_dataset_path + split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
+            temp1 = cv2.imread(self.patch_imgs_dataset_path + split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
+            temp2 = cv2.imread(self.patch_masks_dataset_path + split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
+            X[i, ] = np.expand_dims(temp1, axis=2)
+            y[i, ] = np.expand_dims(temp2, axis=2)
 
-        X = np.einsum('klij->kijl', X)
-        y = np.einsum('klij->kijl', y)
         return X, y

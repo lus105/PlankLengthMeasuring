@@ -1,11 +1,13 @@
 from __future__ import division
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from generator import DataGenerator
-import models as M
+from model import U_Net
 import os
+import glob
 import sys
 sys.path.append('..')
 from PlankLengthMeasuring.settings import options
+from PlankLengthMeasuring.prep_dataset import utilities
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def main():
@@ -20,23 +22,18 @@ def main():
         'shuffle': cfg.shuffle}
 
     # Model definition
-    model = M.basic_unet(
+    model = U_Net(
         input_size=(cfg.patch_size, cfg.patch_size, cfg.num_channels))
-    model.summary()
 
-    _, _, n_im_tr = next(os.walk(cfg.patch_imgs_dataset_path+'/train/'))
-    img_ids_train = ['id-'+str(x+1) for x in range(len(n_im_tr))]
-    _, _, n_ms_tr = next(os.walk(cfg.patch_masks_dataset_path+'/train/'))
-    msk_ids_train = ['id-'+str(x+1) for x in range(len(n_ms_tr))]
-    _, _, n_im_vl = next(os.walk(cfg.patch_imgs_dataset_path+'/val/'))
-    img_ids_val = ['id-'+str(x+1) for x in range(len(n_im_vl))]
-    _, _, n_ms_vl = next(os.walk(cfg.patch_masks_dataset_path+'/val/'))
-    msk_ids_val = ['id-'+str(x+1) for x in range(len(n_ms_vl))]
+    train_img_id = utilities.get_file_list(cfg.patch_imgs_dataset_path, cfg.train_split)
+    train_msk_id = utilities.get_file_list(cfg.patch_masks_dataset_path, cfg.train_split)
+    val_img_id = utilities.get_file_list(cfg.patch_imgs_dataset_path, cfg.val_split)
+    val_msk_id = utilities.get_file_list(cfg.patch_masks_dataset_path, cfg.val_split)
 
     training_generator = DataGenerator(
-        img_ids_train, msk_ids_train, val=False, **params)
+        train_img_id, train_msk_id, val=False, **params)
     validation_generator = DataGenerator(
-        img_ids_val, msk_ids_val, val=True, **params)
+        val_img_id, val_msk_id, val=True, **params)
 
     mcp_save = ModelCheckpoint(
         os.path.join(cfg.weight_path, cfg.weight_name), save_best_only=True, monitor='val_loss', mode='min')

@@ -5,7 +5,7 @@ from keras.optimizers import adam_v2
 from focal_loss import BinaryFocalLoss
 
 
-def basic_unet(input_size=(128, 128, 1)):
+def U_Net(input_size=(128, 128, 1)):
     inputs = Input(input_size)
 
     # Contraction path
@@ -61,5 +61,5 @@ def basic_unet(input_size=(128, 128, 1)):
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
 
     model = Model(inputs, outputs)
-    model.compile(optimizer=adam_v2.Adam(lr=1e-4), loss=BinaryFocalLoss(gamma=1), metrics=['accuracy'])
+    model.compile(optimizer=adam_v2.Adam(learning_rate=1e-4), loss=BinaryFocalLoss(gamma=1), metrics=['accuracy'])
     return model

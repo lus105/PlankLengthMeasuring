@@ -33,7 +33,7 @@ def main():
             print(cfg.masks_train_path+file[i])
             # Check if image has corresponding mask
             if os.path.exists(cfg.masks_train_path+file[i]):
-                counter +=1
+                counter += 1
                 if counter > split_num[curr_split]:
                     counter = 0
                     curr_split += 1

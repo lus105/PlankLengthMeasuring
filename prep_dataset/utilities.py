@@ -1,5 +1,32 @@
+from pickletools import uint8
 import numpy as np
 import cv2
+import glob
+import os
+
+
+def get_file_name(path):
+    file_name_with_ext = os.path.basename(path)
+    file_name, file_extension = os.path.splitext(file_name_with_ext)
+    return file_name
+
+
+def get_file_list(dataset_path, split):
+    img_id = []
+    image_extension = '*.png'
+    image_list = glob.glob(dataset_path + split + image_extension)
+    for path in image_list:
+        img_id.append(get_file_name(path))
+    return img_id
+
+
+def gather_image_from_dir(input_dir):
+    image_extensions = ['*.bmp', '*.jpg', '*.png']
+    image_list = []
+    for image_extension in image_extensions:
+        image_list.extend(glob.glob(input_dir + image_extension))
+    image_list.sort()
+    return image_list
 
 
 def read_images(path_img, path_mask):
@@ -50,8 +77,8 @@ def crop_images(image, mask):
     # Estimate height of plank area and offset based on that
     height = upper_bound - lower_bound
     off = height // 2
-    y_l = lower_bound-off
-    y_u = upper_bound+off
+    y_l = lower_bound - off
+    y_u = upper_bound + off
     # Check if new bounds don't extend over image boundaries
     if y_l < 0:
         y_l = 0
@@ -99,6 +126,58 @@ def extract_patches(img, mask, patch_size):
     patches_mask_train = np.array(patches_mask_train)
 
     return patches_imgs_train, patches_mask_train
+
+def extract_patches_test(img, patch_size):
+    """
+    Function chops given images into array of patches without overlapping.
+    """
+    # Normalization 0-1
+    img = img / 255.
+    # Image size
+    img, N_patches_h, N_patches_w = paint_border_overlap(img, patch_size)
+
+    patches_imgs_test = []
+    for y in range(N_patches_h):
+        y_st = patch_size * y
+        for x in range(N_patches_w):
+            x_st = patch_size * x
+            patch = img[y_st:y_st + patch_size, x_st:x_st + patch_size]
+            patches_imgs_test.append(patch)
+
+    patches_imgs_test = np.array(patches_imgs_test)
+    #patches_imgs_test = np.reshape(patches_imgs_test, (len(patches_imgs_test), 1, patch_size, patch_size))
+
+    return patches_imgs_test, N_patches_h, N_patches_w
+
+def paint_border_overlap(img, patch_size):
+    img_h, img_w = img.shape[:2]
+
+    if img_h % patch_size != 0:
+        N_patches_h = img_h // patch_size + 1
+    else:
+        N_patches_h = img_h // patch_size
+
+    if img_w % patch_size != 0:
+        N_patches_w = img_w // patch_size + 1
+    else:
+        N_patches_w = img_w // patch_size
+
+    tmp_full_img = np.zeros((N_patches_h*patch_size, N_patches_w*patch_size))
+
+    tmp_full_img[:img_h, :img_w] = img
+
+    return tmp_full_img, N_patches_h, N_patches_w
+
+
+def recompone(img_stack, n_h, n_w, img_shape, ptch_size):
+    temp = np.zeros((n_h*ptch_size, n_w*ptch_size, 1), dtype='uint8')
+    n = 0
+    for i in range(n_h):
+        for j in range(n_w):
+            temp[i*ptch_size:ptch_size*(i+1), j*ptch_size:ptch_size*(j+1)] = img_stack[n] * 255.
+            n += 1
+    full_recomp = temp[:img_shape[0], :img_shape[1]]
+    return full_recomp
 
 
 def data_consistency_check(img, mask):
