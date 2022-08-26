@@ -11,6 +11,8 @@ Corresponding mask:
 Tasks:
 > Generator done
 > Models done
-> Import from parent
+> Import from parent 50/50
 > Train test validation splits done
-> Image processing, measuring
+
+> Testing (different measures etc.)
+> Image processing (measuring) class? operating with contour coordinates
