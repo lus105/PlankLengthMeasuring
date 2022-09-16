@@ -3,7 +3,7 @@ from keras.models import Model
 from keras.layers import Input, concatenate, Conv2D, MaxPooling2D, Dropout, Conv2DTranspose
 from keras.optimizers import adam_v2
 from focal_loss import BinaryFocalLoss
-
+import tensorflow as tf
 
 def U_Net(input_size=(128, 128, 1)):
     inputs = Input(input_size)
@@ -61,5 +61,6 @@ def U_Net(input_size=(128, 128, 1)):
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
 
     model = Model(inputs, outputs)
-    model.compile(optimizer=adam_v2.Adam(learning_rate=1e-4), loss=BinaryFocalLoss(gamma=1), metrics=['accuracy'])
+    model.compile(optimizer=adam_v2.Adam(learning_rate=1e-4), loss=BinaryFocalLoss(gamma=1), metrics=[tf.keras.metrics.BinaryAccuracy()])  #'accuracy'
+    print(model.summary())
     return model

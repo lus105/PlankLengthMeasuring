@@ -10,6 +10,7 @@ import tensorflow as tf
 from models.model import U_Net
 from settings import options
 from prep_dataset import utilities
+from image_processing import process
 
 # GPU CONFIG
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -36,7 +37,10 @@ def main():
         # Recompone image from segmented patches
         recomponed_image = utilities.recompone(seg_stack, n_patches_h, n_patches_w, image.shape, cfg.patch_size)
         '''Measuring (image processing)'''
-        cv2.imwrite(cfg.results + file_name + '.png', recomponed_image)
+        mask_th = process.mask_preprocessing(recomponed_image, cfg.mask_thres_val)
+        contours = process.find_contours(mask_th, cfg.cnt_min_per)
+        contours_img = process.vertical_scan(image.shape, contours)
+        cv2.imwrite(cfg.results + file_name + '_cnt.png', contours_img)
 
 
 if __name__ == '__main__':

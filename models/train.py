@@ -22,8 +22,7 @@ def main():
         'shuffle': cfg.shuffle}
 
     # Model definition
-    model = U_Net(
-        input_size=(cfg.patch_size, cfg.patch_size, cfg.num_channels))
+    model = U_Net(input_size=(cfg.patch_size, cfg.patch_size, cfg.num_channels))
 
     train_img_id = utilities.get_file_list(cfg.patch_imgs_dataset_path, cfg.train_split)
     train_msk_id = utilities.get_file_list(cfg.patch_masks_dataset_path, cfg.train_split)
@@ -31,9 +30,9 @@ def main():
     val_msk_id = utilities.get_file_list(cfg.patch_masks_dataset_path, cfg.val_split)
 
     training_generator = DataGenerator(
-        train_img_id, train_msk_id, val=False, **params)
+        train_img_id, train_msk_id, split=cfg.train_split, **params)
     validation_generator = DataGenerator(
-        val_img_id, val_msk_id, val=True, **params)
+        val_img_id, val_msk_id, split=cfg.val_split, **params)
 
     mcp_save = ModelCheckpoint(
         os.path.join(cfg.weight_path, cfg.weight_name), save_best_only=True, monitor='val_loss', mode='min')

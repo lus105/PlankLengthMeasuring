@@ -6,12 +6,12 @@ import cv2
 class DataGenerator(keras.utils.all_utils.Sequence):
     'Generates data for Keras'
 
-    def __init__(self, list_IDs, labels, val, patch_imgs_dataset_path, patch_masks_dataset_path,
+    def __init__(self, list_IDs, labels, split, patch_imgs_dataset_path, patch_masks_dataset_path,
                  batch_size=8, dim=(128, 128), n_channels=1, shuffle=True):
         'Initialization'
         self.patch_imgs_dataset_path = patch_imgs_dataset_path
         self.patch_masks_dataset_path = patch_masks_dataset_path
-        self.val = val
+        self.split = split
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
@@ -31,7 +31,7 @@ class DataGenerator(keras.utils.all_utils.Sequence):
         # Find list of IDs
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
         # Generate data
-        X, y = self.__data_generation(list_IDs_temp)
+        X, y = self.__data_generation(list_IDs_temp) 
 
         return X, y
 
@@ -50,14 +50,8 @@ class DataGenerator(keras.utils.all_utils.Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            # Store sample
-            if not self.val:
-                split = '/train/'
-            else:
-                split = '/val/'
-
-            temp1 = cv2.imread(self.patch_imgs_dataset_path + split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
-            temp2 = cv2.imread(self.patch_masks_dataset_path + split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
+            temp1 = cv2.imread(self.patch_imgs_dataset_path + self.split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
+            temp2 = cv2.imread(self.patch_masks_dataset_path + self.split + ID + '.png', cv2.IMREAD_GRAYSCALE) / 255.
             X[i, ] = np.expand_dims(temp1, axis=2)
             y[i, ] = np.expand_dims(temp2, axis=2)
 

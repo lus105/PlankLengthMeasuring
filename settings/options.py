@@ -44,6 +44,12 @@ class Options():
         self.parser.add_argument(
             '--split_ratio', type=tuple, default=(0.7, 0.2, 0.1))
 
+        # Measuring consts
+        self.parser.add_argument(
+            '--mask_thres_val', type=int, default=150)
+        self.parser.add_argument(
+            '--cnt_min_per', type=int, default=7000)
+
     def parse(self):
         self.opt = self.parser.parse_args()
         self._create_directories()
