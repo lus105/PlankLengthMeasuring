@@ -2,6 +2,22 @@ import numpy as np
 import cv2
 
 
+def vscan_points(cnt_img, offset, stride):
+    n = (cnt_img.shape[1] - 2 * offset) / stride
+    v_cord = offset
+    pnts_list = []
+    for i in range(int(n)):
+        if v_cord > cnt_img.shape[1]:
+            break
+        pnts = cnt_img[:, v_cord]
+        pnts_fil = np.squeeze(np.where(pnts[:, 0] == 255), axis=0)
+        pnts_fil = tuple(pnts_fil)
+        if len(pnts_fil) != 0:
+            pnts_list.append((v_cord, pnts_fil))
+        v_cord += stride
+    return pnts_list
+
+
 def find_peaks(image, th_value, axis):
     image = image / 255.
 
@@ -52,7 +68,13 @@ def find_contours(img, min_perimeter):
     return contours_new
 
 
-def vertical_scan(img_shape, contours):
+def vertical_scan(img_shape, contours, offset, stride):
     empty = np.zeros((img_shape[0], img_shape[1], 1), dtype=np.uint8)
     cv2.drawContours(empty, contours, -1, 255, 1)
+    pnts = vscan_points(empty, offset, stride)
+    empty = cv2.cvtColor(empty, cv2.COLOR_GRAY2BGR)
+    for pnt in pnts:
+        for pn in pnt[1]:
+            cv2.circle(empty, [pnt[0], pn], 2, (0, 255, 0), -1)
+    cv2.imwrite('points.png', empty)
     return empty

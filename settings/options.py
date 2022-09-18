@@ -52,11 +52,13 @@ class Options():
         self.parser.add_argument(
             '--crop_offset', type=int, default=200)
         self.parser.add_argument(
-            '--scan_offset', type=int, default=200)
+            '--scan_offset', type=int, default=400)
         self.parser.add_argument(
             '--mask_thres_val', type=int, default=150)
         self.parser.add_argument(
             '--cnt_min_per', type=int, default=7000)
+        self.parser.add_argument(
+            '--scan_stride', type=int, default=50)
 
     def parse(self):
         self.opt = self.parser.parse_args()
