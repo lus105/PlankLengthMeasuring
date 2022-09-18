@@ -46,6 +46,14 @@ class Options():
 
         # Measuring consts
         self.parser.add_argument(
+            '--x_th', type=int, default=500)
+        self.parser.add_argument(
+            '--y_th', type=int, default=500)
+        self.parser.add_argument(
+            '--crop_offset', type=int, default=200)
+        self.parser.add_argument(
+            '--scan_offset', type=int, default=200)
+        self.parser.add_argument(
             '--mask_thres_val', type=int, default=150)
         self.parser.add_argument(
             '--cnt_min_per', type=int, default=7000)
